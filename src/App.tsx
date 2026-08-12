@@ -86,7 +86,7 @@ INITIAL_EQUIPMENT.forEach(eq => {
   eq.history = GENERATE_HISTORY(eq.sensors.temperature, eq.sensors.vibration, eq.failureRisk);
 });
 
-// --- AI PREDICTION ENGINE (RULE-BASED SIMULATION) ---
+// --- AI PREDICTION ENGINE ---
 
 const calculateAIAnalysis = (sensors: SensorData): { risk: number; health: number; issue: string; action: string; status: Status } => {
   let risk = 0;
@@ -120,10 +120,13 @@ const calculateAIAnalysis = (sensors: SensorData): { risk: number; health: numbe
   };
 };
 
-// --- COMPONENTS ---
+// --- ANIMATED COMPONENTS ---
 
-const Card = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={cn("glass-panel rounded-xl p-5 transition-all duration-300 hover:border-[#44403c]", className)}>
+const Card = ({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => (
+  <div 
+    className={cn("glass-panel rounded-xl p-5 card-hover animate-fade-in-up hover:border-[#f59e0b]/40", className)}
+    style={{ animationDelay: `${delay}s`, opacity: 0, animationFillMode: 'forwards' }}
+  >
     {children}
   </div>
 );
@@ -158,6 +161,7 @@ export default function BuildSenseAI() {
   const [chatHistory, setChatHistory] = useState<Array<{role: 'user'|'ai', content: string}>>([
     { role: 'ai', content: "Hello. I'm BuildSense AI Copilot. Ask me about equipment health, maintenance priorities, or sensor anomalies." }
   ]);
+  const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -214,7 +218,7 @@ export default function BuildSenseAI() {
     });
   }, [equipment]);
 
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatHistory]);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatHistory, isTyping]);
 
   useEffect(() => {
     if (!demoMode) return;
@@ -288,8 +292,10 @@ export default function BuildSenseAI() {
 
   const handleCopilotSend = (msg: string) => {
     setChatHistory(prev => [...prev, { role: 'user', content: msg }]);
+    setIsTyping(true);
     
     setTimeout(() => {
+      setIsTyping(false);
       let response = "I'm analyzing that request based on current telemetry...";
       const lowerMsg = msg.toLowerCase();
       
@@ -314,10 +320,10 @@ export default function BuildSenseAI() {
 
   if (view === 'login') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1c1c1c] via-[#0f0f0f] to-black p-4">
-        <div className="w-full max-w-md glass-panel p-8 rounded-2xl border-t border-[#44403c]/50">
+      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1c1c1c] via-[#0f0f0f] to-black p-4 animate-fade-in">
+        <div className="w-full max-w-md glass-panel p-8 rounded-2xl border-t border-[#44403c]/50 animate-scale-in">
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-2 bg-[#f59e0b]/20 rounded-lg"><Building2 className="w-8 h-8 text-[#f59e0b]" /></div>
+            <div className="p-2 bg-[#f59e0b]/20 rounded-lg animate-float"><Building2 className="w-8 h-8 text-[#f59e0b]" /></div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-[#fef3c7]">BuildSense AI</h1>
               <p className="text-[#a8a29e] text-sm">Predict Early. Act Smart.</p>
@@ -325,22 +331,22 @@ export default function BuildSenseAI() {
           </div>
           
           <div className="space-y-4">
-            <div>
+            <div className="animate-fade-in-up stagger-1">
               <label className="block text-xs font-medium text-[#a8a29e] mb-1.5 uppercase tracking-wider">Email</label>
               <input type="email" defaultValue="admin@campus.edu" className="w-full bg-[#0f0f0f]/50 border border-[#3a3a3a] rounded-lg px-4 py-3 text-sm text-[#fef3c7] focus:outline-none focus:border-[#f59e0b] transition-colors" />
             </div>
-            <div>
+            <div className="animate-fade-in-up stagger-2">
               <label className="block text-xs font-medium text-[#a8a29e] mb-1.5 uppercase tracking-wider">Password</label>
               <input type="password" defaultValue="password" className="w-full bg-[#0f0f0f]/50 border border-[#3a3a3a] rounded-lg px-4 py-3 text-sm text-[#fef3c7] focus:outline-none focus:border-[#f59e0b] transition-colors" />
             </div>
             <button 
               onClick={() => setView('dashboard')}
-              className="w-full bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] font-bold py-3 rounded-lg transition-all mt-4 shadow-[0_0_20px_-5px_rgba(245,158,11,0.5)]"
+              className="w-full bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] font-bold py-3 rounded-lg transition-all mt-4 shadow-[0_0_20px_-5px_rgba(245,158,11,0.5)] animate-glow-pulse btn-press animate-fade-in-up stagger-3"
             >
               Enter Command Center
             </button>
           </div>
-          <p className="text-center text-xs text-[#57534e] mt-6">Secure Institutional Access • v2.4.0</p>
+          <p className="text-center text-xs text-[#57534e] mt-6 animate-fade-in stagger-4">Secure Institutional Access • v2.4.0</p>
         </div>
       </div>
     );
@@ -350,9 +356,9 @@ export default function BuildSenseAI() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0f0f0f]">
-      <aside className="w-64 border-r border-[#3a3a3a]/60 flex flex-col bg-[#0f0f0f]/80 backdrop-blur-xl z-20 hidden md:flex">
+      <aside className="w-64 border-r border-[#3a3a3a]/60 flex flex-col bg-[#0f0f0f]/80 backdrop-blur-xl z-20 hidden md:flex animate-slide-in-left">
         <div className="p-6 flex items-center gap-3 border-b border-[#3a3a3a]/60">
-          <div className="p-1.5 bg-[#f59e0b]/20 rounded-md"><Building2 className="w-6 h-6 text-[#f59e0b]" /></div>
+          <div className="p-1.5 bg-[#f59e0b]/20 rounded-md animate-float"><Building2 className="w-6 h-6 text-[#f59e0b]" /></div>
           <span className="font-bold text-lg tracking-tight text-[#fef3c7]">BuildSense</span>
         </div>
         
@@ -365,12 +371,13 @@ export default function BuildSenseAI() {
             { id: 'maintenance', icon: Settings, label: 'Maintenance' },
             { id: 'copilot', icon: Bot, label: 'AI Copilot' },
             { id: 'analytics', icon: BarChart3, label: 'Analytics' },
-          ].map(item => (
+          ].map((item, index) => (
             <button
               key={item.id}
               onClick={() => { setView(item.id as any); setSelectedEqId(null); }}
+              style={{ animationDelay: `${0.1 + index * 0.05}s`, opacity: 0, animationFillMode: 'forwards' }}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
+                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all animate-slide-in-left btn-press",
                 view === item.id 
                   ? "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/30" 
                   : "text-[#a8a29e] hover:text-[#fef3c7] hover:bg-[#1c1c1c]"
@@ -383,7 +390,7 @@ export default function BuildSenseAI() {
         </nav>
 
         <div className="p-4 border-t border-[#3a3a3a]/60">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1c1c1c]/50 border border-[#3a3a3a]">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1c1c1c]/50 border border-[#3a3a3a] animate-fade-in stagger-6">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-[#fef3c7] truncate">System Online</p>
@@ -394,7 +401,7 @@ export default function BuildSenseAI() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="h-16 border-b border-[#3a3a3a]/60 flex items-center justify-between px-6 bg-[#0f0f0f]/80 backdrop-blur-md z-10">
+        <header className="h-16 border-b border-[#3a3a3a]/60 flex items-center justify-between px-6 bg-[#0f0f0f]/80 backdrop-blur-md z-10 animate-fade-in">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold capitalize text-[#fef3c7]">{view.replace('-', ' ')}</h2>
             {demoMode && (
@@ -408,14 +415,14 @@ export default function BuildSenseAI() {
             {!demoMode ? (
               <button 
                 onClick={() => { setDemoMode(true); setDemoStep(0); setView('dashboard'); }}
-                className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] text-xs font-bold rounded-lg transition-all shadow-lg shadow-[#f59e0b]/30"
+                className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] text-xs font-bold rounded-lg transition-all shadow-lg shadow-[#f59e0b]/30 animate-glow-pulse btn-press"
               >
                 <Play className="w-3 h-3 fill-current" /> START HACKATHON DEMO
               </button>
             ) : (
               <button 
                 onClick={() => setDemoMode(false)}
-                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-[#fef3c7] text-xs font-bold rounded-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-[#fef3c7] text-xs font-bold rounded-lg transition-all btn-press"
               >
                 <Square className="w-3 h-3 fill-current" /> STOP DEMO
               </button>
@@ -438,7 +445,7 @@ export default function BuildSenseAI() {
         <div className="flex-1 overflow-auto p-6 scroll-smooth">
           
           {view === 'dashboard' && (
-            <div className="space-y-6 max-w-7xl mx-auto">
+            <div key="dashboard" className="space-y-6 max-w-7xl mx-auto page-enter">
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[
                   { label: 'Building Health', value: '87%', sub: 'Healthy', color: 'text-emerald-400' },
@@ -448,7 +455,7 @@ export default function BuildSenseAI() {
                   { label: 'Predicted Failures', value: '5', sub: 'Next 30 Days', color: 'text-rose-400' },
                   { label: 'Energy Usage', value: '18.6', sub: 'MWh Today', color: 'text-[#fbbf24]' },
                 ].map((stat, i) => (
-                  <Card key={i} className="flex flex-col justify-between min-h-[120px]">
+                  <Card key={i} delay={i * 0.08} className="flex flex-col justify-between min-h-[120px]">
                     <p className="text-xs font-medium text-[#78716c] uppercase tracking-wider">{stat.label}</p>
                     <div>
                       <p className={cn("text-3xl font-bold tracking-tight", stat.color)}>{stat.value}</p>
@@ -459,10 +466,10 @@ export default function BuildSenseAI() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 min-h-[400px] flex flex-col">
+                <Card delay={0.3} className="lg:col-span-2 min-h-[400px] flex flex-col">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="font-semibold text-[#fef3c7]">Campus Building Overview</h3>
-                    <button onClick={() => setView('monitor')} className="text-xs text-[#f59e0b] hover:text-[#fbbf24] flex items-center gap-1">View All <ChevronRight className="w-3 h-3"/></button>
+                    <button onClick={() => setView('monitor')} className="text-xs text-[#f59e0b] hover:text-[#fbbf24] flex items-center gap-1 btn-press">View All <ChevronRight className="w-3 h-3"/></button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 flex-1">
                     {['Academic Block', 'Laboratory Block', 'Library', 'Administration', 'Hostel', 'Sports Complex'].map((bldg, i) => {
@@ -472,8 +479,9 @@ export default function BuildSenseAI() {
                         <button 
                           key={i}
                           onClick={() => { setView('monitor'); }}
+                          style={{ animationDelay: `${0.4 + i * 0.08}s`, opacity: 0, animationFillMode: 'forwards' }}
                           className={cn(
-                            "relative group p-4 rounded-xl border transition-all text-left h-full flex flex-col justify-between",
+                            "relative group p-4 rounded-xl border transition-all text-left h-full flex flex-col justify-between card-hover animate-fade-in-up btn-press",
                             worstStatus === 'critical' ? "bg-rose-500/5 border-rose-500/30 hover:bg-rose-500/10" :
                             worstStatus === 'warning' ? "bg-amber-500/5 border-amber-500/30 hover:bg-amber-500/10" :
                             "bg-[#1c1c1c]/50 border-[#3a3a3a] hover:border-[#44403c]"
@@ -496,20 +504,20 @@ export default function BuildSenseAI() {
                   </div>
                 </Card>
 
-                <Card className="min-h-[400px] flex flex-col">
+                <Card delay={0.4} className="min-h-[400px] flex flex-col">
                   <h3 className="font-semibold text-[#fef3c7] mb-4">Priority Maintenance Queue</h3>
                   <div className="flex-1 space-y-3 overflow-auto pr-2">
                     {tasks.filter(t => t.status !== 'Completed').length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-[#57534e] text-sm">
-                        <CheckCircle2 className="w-8 h-8 mb-2 opacity-50" />
+                      <div className="h-full flex flex-col items-center justify-center text-[#57534e] text-sm animate-fade-in">
+                        <CheckCircle2 className="w-8 h-8 mb-2 opacity-50 animate-float" />
                         No pending maintenance tasks
                       </div>
                     ) : (
                       tasks.filter(t => t.status !== 'Completed').sort((a,b) => {
                         const pMap = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
                         return pMap[b.priority] - pMap[a.priority];
-                      }).map(task => (
-                        <div key={task.id} className="p-3 rounded-lg bg-[#0f0f0f]/50 border border-[#3a3a3a]/60 hover:border-[#44403c] transition-colors cursor-pointer" onClick={() => {setView('maintenance')}}>
+                      }).map((task, i) => (
+                        <div key={task.id} className="p-3 rounded-lg bg-[#0f0f0f]/50 border border-[#3a3a3a]/60 hover:border-[#f59e0b]/40 transition-colors cursor-pointer card-hover animate-fade-in-up btn-press" style={{ animationDelay: `${0.2 + i * 0.08}s`, opacity: 0, animationFillMode: 'forwards' }} onClick={() => {setView('maintenance')}}>
                           <div className="flex justify-between items-start mb-1">
                             <span className="text-sm font-medium text-[#fef3c7]">{task.title}</span>
                             <Badge status={task.priority} />
@@ -525,11 +533,11 @@ export default function BuildSenseAI() {
           )}
 
           {(view === 'equipment' || view === 'monitor' || view === 'predictions') && (
-            <div className="max-w-7xl mx-auto space-y-6">
+            <div key={selectedEqId || 'list'} className="max-w-7xl mx-auto space-y-6 page-enter">
               {!selectedEquipment ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {equipment.map(eq => (
-                    <Card key={eq.id} className="cursor-pointer hover:shadow-[#f59e0b]/10 group" >
+                  {equipment.map((eq, idx) => (
+                    <Card key={eq.id} delay={idx * 0.08} className="cursor-pointer group" >
                       <div className="flex justify-between items-start mb-4" onClick={() => setSelectedEqId(eq.id)}>
                         <div className="p-2 bg-[#2a2a2a] rounded-lg group-hover:bg-[#f59e0b]/20 transition-colors">
                           {eq.type === 'HVAC' ? <Fan className="w-5 h-5 text-[#a8a29e] group-hover:text-[#f59e0b]"/> : 
@@ -545,7 +553,7 @@ export default function BuildSenseAI() {
                         <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
                           <div>
                             <p className="text-[#78716c]">Failure Risk</p>
-                            <p className={cn("font-mono font-medium", eq.failureRisk > 70 ? "text-rose-400" : eq.failureRisk > 40 ? "text-amber-400" : "text-emerald-400")}>{eq.failureRisk}%</p>
+                            <p className={cn("font-mono font-medium transition-all duration-300", eq.failureRisk > 70 ? "text-rose-400" : eq.failureRisk > 40 ? "text-amber-400" : "text-emerald-400")}>{eq.failureRisk}%</p>
                           </div>
                           <div>
                             <p className="text-[#78716c]">Health Score</p>
@@ -565,12 +573,12 @@ export default function BuildSenseAI() {
                   ))}
                 </div>
               ) : (
-                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <button onClick={() => setSelectedEqId(null)} className="text-sm text-[#a8a29e] hover:text-[#fef3c7] flex items-center gap-1 mb-2">← Back to List</button>
+                <div className="space-y-6 animate-fade-in-up">
+                  <button onClick={() => setSelectedEqId(null)} className="text-sm text-[#a8a29e] hover:text-[#fef3c7] flex items-center gap-1 mb-2 btn-press animate-slide-in-left">← Back to List</button>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="space-y-6">
-                      <Card>
+                      <Card delay={0.1}>
                         <div className="flex justify-between items-center mb-6">
                           <div>
                             <h2 className="text-2xl font-bold text-[#fef3c7]">{selectedEquipment.name}</h2>
@@ -583,12 +591,12 @@ export default function BuildSenseAI() {
                           <div>
                             <div className="flex justify-between text-xs mb-1">
                               <span className="text-[#a8a29e]">AI Failure Probability</span>
-                              <span className={cn("font-bold", selectedEquipment.failureRisk > 70 ? "text-rose-400" : "text-emerald-400")}>{selectedEquipment.failureRisk}%</span>
+                              <span className={cn("font-bold transition-all duration-500", selectedEquipment.failureRisk > 70 ? "text-rose-400" : "text-emerald-400")}>{selectedEquipment.failureRisk}%</span>
                             </div>
                             <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
                               <div 
-                                className={cn("h-full transition-all duration-1000 ease-out", 
-                                  selectedEquipment.failureRisk > 70 ? "bg-rose-500" : 
+                                className={cn("h-full rounded-full progress-bar-fill", 
+                                  selectedEquipment.failureRisk > 70 ? "bg-rose-500 animate-critical-pulse" : 
                                   selectedEquipment.failureRisk > 40 ? "bg-amber-500" : "bg-emerald-500"
                                 )}
                                 style={{ width: `${selectedEquipment.failureRisk}%` }}
@@ -604,12 +612,12 @@ export default function BuildSenseAI() {
                               { label: 'Current', val: `${selectedEquipment.sensors.current} A`, icon: Zap },
                               { label: 'Humidity', val: `${selectedEquipment.sensors.humidity}%`, icon: Wifi },
                             ].map((s, i) => (
-                              <div key={i} className="p-3 rounded-lg bg-[#0f0f0f]/50 border border-[#3a3a3a]/50">
+                              <div key={i} className="p-3 rounded-lg bg-[#0f0f0f]/50 border border-[#3a3a3a]/50 animate-fade-in-up card-hover" style={{ animationDelay: `${0.2 + i * 0.05}s`, opacity: 0, animationFillMode: 'forwards' }}>
                                 <div className="flex items-center gap-2 text-[#78716c] mb-1">
                                   <s.icon className="w-3 h-3" />
                                   <span className="text-[10px] uppercase tracking-wider">{s.label}</span>
                                 </div>
-                                <p className="text-lg font-mono font-medium text-[#fef3c7]">{s.val}</p>
+                                <p className="text-lg font-mono font-medium text-[#fef3c7] transition-all duration-300">{s.val}</p>
                               </div>
                             ))}
                           </div>
@@ -617,29 +625,29 @@ export default function BuildSenseAI() {
                       </Card>
 
                       {!demoMode && (
-                        <Card className="border-[#f59e0b]/30 bg-[#f59e0b]/5">
+                        <Card delay={0.3} className="border-[#f59e0b]/30 bg-[#f59e0b]/5">
                           <h3 className="text-sm font-semibold text-[#fbbf24] mb-3 flex items-center gap-2">
-                            <Settings className="w-4 h-4" /> Manual Sensor Simulation
+                            <Settings className="w-4 h-4 animate-spin-slow" /> Manual Sensor Simulation
                           </h3>
                           <div className="grid grid-cols-3 gap-2">
-                            <button onClick={() => updateSensor(selectedEquipment.id, { temperature: 45, vibration: 2.1, current: 8.2 })} className="px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded border border-emerald-500/20 transition-colors">Normal</button>
-                            <button onClick={() => updateSensor(selectedEquipment.id, { temperature: 62, vibration: 5.5, current: 11.5 })} className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-medium rounded border border-amber-500/20 transition-colors">Warning</button>
-                            <button onClick={() => updateSensor(selectedEquipment.id, { temperature: 78, vibration: 9.1, current: 14.2 })} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium rounded border border-rose-500/20 transition-colors">Critical</button>
+                            <button onClick={() => updateSensor(selectedEquipment.id, { temperature: 45, vibration: 2.1, current: 8.2 })} className="px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded border border-emerald-500/20 transition-colors btn-press">Normal</button>
+                            <button onClick={() => updateSensor(selectedEquipment.id, { temperature: 62, vibration: 5.5, current: 11.5 })} className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-medium rounded border border-amber-500/20 transition-colors btn-press">Warning</button>
+                            <button onClick={() => updateSensor(selectedEquipment.id, { temperature: 78, vibration: 9.1, current: 14.2 })} className="px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium rounded border border-rose-500/20 transition-colors btn-press">Critical</button>
                           </div>
                         </Card>
                       )}
                     </div>
 
-                    <Card className="lg:col-span-2 min-h-[400px] flex flex-col">
+                    <Card delay={0.2} className="lg:col-span-2 min-h-[400px] flex flex-col">
                       <div className="flex items-center justify-between mb-6">
                         <h3 className="font-semibold text-[#fef3c7]">Real-time Telemetry & AI Trend</h3>
                         <div className="flex gap-2">
                           {['24H', '7D', '30D'].map(t => (
-                            <button key={t} className="px-2 py-1 text-[10px] font-medium text-[#78716c] hover:text-[#fef3c7] hover:bg-[#2a2a2a] rounded transition-colors">{t}</button>
+                            <button key={t} className="px-2 py-1 text-[10px] font-medium text-[#78716c] hover:text-[#fef3c7] hover:bg-[#2a2a2a] rounded transition-colors btn-press">{t}</button>
                           ))}
                         </div>
                       </div>
-                      <div className="flex-1 min-h-[300px]">
+                      <div className="flex-1 min-h-[300px] animate-fade-in">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={selectedEquipment.history}>
                             <defs>
@@ -668,11 +676,11 @@ export default function BuildSenseAI() {
                   </div>
 
                   {selectedEquipment.failureRisk > 30 && (
-                    <div className="glass-panel rounded-xl p-6 border-l-4 border-l-[#f59e0b] animate-in fade-in slide-in-from-bottom-2">
+                    <div className="glass-panel rounded-xl p-6 border-l-4 border-l-[#f59e0b] animate-slide-in-left" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <Lightbulb className="w-4 h-4 text-[#f59e0b]" />
+                            <Lightbulb className="w-4 h-4 text-[#f59e0b] animate-pulse" />
                             <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider">AI Prescriptive Recommendation</span>
                           </div>
                           <h3 className="text-lg font-semibold text-[#fef3c7] mb-1">{selectedEquipment.action}</h3>
@@ -682,11 +690,11 @@ export default function BuildSenseAI() {
                           <button 
                             onClick={() => createTaskFromPrediction(selectedEquipment.id)}
                             disabled={tasks.some(t => t.equipmentId === selectedEquipment.id && t.status !== 'Completed')}
-                            className="px-4 py-2 bg-[#f59e0b] hover:bg-[#fb923c] disabled:bg-[#2a2a2a] disabled:text-[#78716c] text-[#0f0f0f] text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#f59e0b]/30"
+                            className="px-4 py-2 bg-[#f59e0b] hover:bg-[#fb923c] disabled:bg-[#2a2a2a] disabled:text-[#78716c] text-[#0f0f0f] text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#f59e0b]/30 btn-press"
                           >
-                            {tasks.some(t => t.equipmentId === selectedEquipment.id && t.status !== 'Completed') ? 'Task Created' : 'Create Maintenance Task'}
+                            {tasks.some(t => t.equipmentId === selectedEquipment.id && t.status !== 'Completed') ? '✓ Task Created' : 'Create Maintenance Task'}
                           </button>
-                          <button className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-[#fde68a] text-sm font-medium rounded-lg transition-all">Acknowledge</button>
+                          <button className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-[#fde68a] text-sm font-medium rounded-lg transition-all btn-press">Acknowledge</button>
                         </div>
                       </div>
                     </div>
@@ -697,19 +705,19 @@ export default function BuildSenseAI() {
           )}
 
           {view === 'maintenance' && (
-            <div className="h-full flex flex-col max-w-7xl mx-auto">
+            <div key="maintenance" className="h-full flex flex-col max-w-7xl mx-auto page-enter">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-[#fef3c7]">Maintenance Priority Board</h2>
                 <div className="flex gap-2">
                   {['All', 'Critical', 'High', 'Medium'].map(f => (
-                    <button key={f} className="px-3 py-1.5 text-xs font-medium text-[#a8a29e] hover:text-[#fef3c7] bg-[#1c1c1c] hover:bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg transition-all">{f}</button>
+                    <button key={f} className="px-3 py-1.5 text-xs font-medium text-[#a8a29e] hover:text-[#fef3c7] bg-[#1c1c1c] hover:bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg transition-all btn-press">{f}</button>
                   ))}
                 </div>
               </div>
               
               <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto pb-4">
-                {(['Critical', 'In Progress', 'Scheduled', 'Completed'] as const).map(status => (
-                  <div key={status} className="flex flex-col min-w-[280px]">
+                {(['Critical', 'In Progress', 'Scheduled', 'Completed'] as const).map((status, sIdx) => (
+                  <div key={status} className="flex flex-col min-w-[280px] animate-fade-in-up" style={{ animationDelay: `${sIdx * 0.1}s`, opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="flex items-center justify-between mb-3 px-1">
                       <h3 className="text-xs font-bold text-[#78716c] uppercase tracking-wider">{status}</h3>
                       <span className="text-[10px] bg-[#1c1c1c] px-2 py-0.5 rounded-full text-[#57534e] border border-[#3a3a3a]">
@@ -717,8 +725,8 @@ export default function BuildSenseAI() {
                       </span>
                     </div>
                     <div className="flex-1 bg-[#1c1c1c]/30 rounded-xl p-2 space-y-2 border border-[#3a3a3a]/30">
-                      {tasks.filter(t => t.status === status).map(task => (
-                        <div key={task.id} className="p-3 bg-[#0f0f0f] border border-[#3a3a3a] rounded-lg shadow-sm hover:border-[#44403c] transition-all group">
+                      {tasks.filter(t => t.status === status).map((task, tIdx) => (
+                        <div key={task.id} className="p-3 bg-[#0f0f0f] border border-[#3a3a3a] rounded-lg shadow-sm hover:border-[#f59e0b]/40 transition-all group card-hover animate-fade-in-up" style={{ animationDelay: `${0.1 + tIdx * 0.08}s`, opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="flex justify-between items-start mb-2">
                             <Badge status={task.priority} />
                             <span className="text-[10px] text-[#57534e]">{new Date(task.createdAt).toLocaleDateString()}</span>
@@ -729,13 +737,13 @@ export default function BuildSenseAI() {
                           {status !== 'Completed' && (
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               {status === 'Critical' && (
-                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'In Progress'} : t))} className="flex-1 py-1 text-[10px] bg-[#f59e0b]/10 text-[#f59e0b] rounded hover:bg-[#f59e0b]/20">Start</button>
+                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'In Progress'} : t))} className="flex-1 py-1 text-[10px] bg-[#f59e0b]/10 text-[#f59e0b] rounded hover:bg-[#f59e0b]/20 btn-press">Start</button>
                               )}
                               {status === 'In Progress' && (
-                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'Scheduled'} : t))} className="flex-1 py-1 text-[10px] bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20">Schedule</button>
+                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'Scheduled'} : t))} className="flex-1 py-1 text-[10px] bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20 btn-press">Schedule</button>
                               )}
                               {status === 'Scheduled' && (
-                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'Completed'} : t))} className="flex-1 py-1 text-[10px] bg-emerald-500/10 text-emerald-400 rounded hover:bg-emerald-500/20">Complete</button>
+                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'Completed'} : t))} className="flex-1 py-1 text-[10px] bg-emerald-500/10 text-emerald-400 rounded hover:bg-emerald-500/20 btn-press">Complete</button>
                               )}
                             </div>
                           )}
@@ -754,9 +762,9 @@ export default function BuildSenseAI() {
           )}
 
           {view === 'copilot' && (
-            <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col glass-panel rounded-2xl overflow-hidden">
+            <div key="copilot" className="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col glass-panel rounded-2xl overflow-hidden animate-scale-in">
               <div className="p-4 border-b border-[#3a3a3a]/60 bg-[#1c1c1c]/80 flex items-center gap-3">
-                <div className="p-2 bg-[#f59e0b]/20 rounded-lg"><Bot className="w-5 h-5 text-[#f59e0b]" /></div>
+                <div className="p-2 bg-[#f59e0b]/20 rounded-lg animate-float"><Bot className="w-5 h-5 text-[#f59e0b]" /></div>
                 <div>
                   <h3 className="font-semibold text-[#fef3c7]">BuildSense AI Copilot</h3>
                   <p className="text-xs text-[#78716c]">Your 24/7 virtual maintenance assistant</p>
@@ -769,13 +777,22 @@ export default function BuildSenseAI() {
                     <div className={cn(
                       "max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed",
                       msg.role === 'user' 
-                        ? "bg-[#f59e0b] text-[#0f0f0f] font-medium rounded-br-none" 
-                        : "bg-[#2a2a2a] text-[#fde68a] rounded-bl-none border border-[#44403c]"
+                        ? "bg-[#f59e0b] text-[#0f0f0f] font-medium rounded-br-none animate-slide-in-right" 
+                        : "bg-[#2a2a2a] text-[#fde68a] rounded-bl-none border border-[#44403c] animate-slide-in-left"
                     )}>
                       {msg.content}
                     </div>
                   </div>
                 ))}
+                {isTyping && (
+                  <div className="flex justify-start animate-fade-in">
+                    <div className="bg-[#2a2a2a] border border-[#44403c] rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1">
+                      <span className="typing-dot"></span>
+                      <span className="typing-dot"></span>
+                      <span className="typing-dot"></span>
+                    </div>
+                  </div>
+                )}
                 <div ref={chatEndRef} />
               </div>
               
@@ -785,7 +802,7 @@ export default function BuildSenseAI() {
                     <button 
                       key={q} 
                       onClick={() => handleCopilotSend(q)}
-                      className="whitespace-nowrap px-3 py-1.5 bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-[#44403c] rounded-full text-xs text-[#fde68a] transition-colors"
+                      className="whitespace-nowrap px-3 py-1.5 bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-[#44403c] rounded-full text-xs text-[#fde68a] transition-colors btn-press"
                     >
                       {q}
                     </button>
@@ -794,7 +811,7 @@ export default function BuildSenseAI() {
                 <form onSubmit={(e) => { e.preventDefault(); const input = e.currentTarget.input as HTMLInputElement; if(input.value.trim()) { handleCopilotSend(input.value); input.value = ''; } }}>
                   <div className="relative">
                     <input name="input" type="text" placeholder="Ask about equipment health, risks, or maintenance..." className="w-full bg-[#0f0f0f] border border-[#3a3a3a] rounded-xl pl-4 pr-12 py-3 text-sm text-[#fef3c7] focus:outline-none focus:border-[#f59e0b] transition-colors" />
-                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[#f59e0b] hover:bg-[#fb923c] rounded-lg text-[#0f0f0f] transition-colors">
+                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[#f59e0b] hover:bg-[#fb923c] rounded-lg text-[#0f0f0f] transition-colors btn-press">
                       <MessageSquare className="w-4 h-4" />
                     </button>
                   </div>
@@ -804,9 +821,9 @@ export default function BuildSenseAI() {
           )}
 
           {view === 'analytics' && (
-            <div className="max-w-7xl mx-auto space-y-6">
+            <div key="analytics" className="max-w-7xl mx-auto space-y-6 page-enter">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="min-h-[300px]">
+                <Card delay={0.1} className="min-h-[300px]">
                   <h3 className="font-semibold text-[#fef3c7] mb-4">Campus Energy Consumption (MWh)</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={[{d:'Mon',v:18},{d:'Tue',v:22},{d:'Wed',v:19},{d:'Thu',v:24},{d:'Fri',v:21},{d:'Sat',v:15},{d:'Sun',v:14}]}>
@@ -818,7 +835,7 @@ export default function BuildSenseAI() {
                     </LineChart>
                   </ResponsiveContainer>
                 </Card>
-                <Card className="min-h-[300px]">
+                <Card delay={0.2} className="min-h-[300px]">
                   <h3 className="font-semibold text-[#fef3c7] mb-4">Aggregate Failure Risk Distribution</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <AreaChart data={equipment.map(e => ({name: e.name, risk: e.failureRisk}))}>
