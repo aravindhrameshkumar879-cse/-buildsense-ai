@@ -292,7 +292,7 @@ export default function BuildSenseAI() {
       priority: eq.status === 'critical' ? 'CRITICAL' : 'HIGH',
       status: 'Critical',
       createdAt: new Date().toISOString(),
-      recommendation: eq.action
+      recommendation: eq.action || 'Schedule inspection'
     };
     setTasks(prev => [newTask, ...prev]);
   };
