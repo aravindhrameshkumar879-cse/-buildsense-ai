@@ -43,6 +43,7 @@ interface Equipment {
   issue?: string;
   action?: string;
 }
+
 interface MaintenanceTask {
   id: string;
   equipmentId: string;
@@ -91,19 +92,15 @@ const calculateAIAnalysis = (sensors: SensorData): { risk: number; health: numbe
   let risk = 0;
   let issues: string[] = [];
   
-  // Thermal Analysis
   if (sensors.temperature > 70) { risk += 35; issues.push("Thermal overload"); }
   else if (sensors.temperature > 55) { risk += 15; issues.push("Elevated temperature"); }
   
-  // Mechanical Analysis
   if (sensors.vibration > 8) { risk += 40; issues.push("Severe bearing degradation"); }
   else if (sensors.vibration > 4.5) { risk += 20; issues.push("Abnormal mechanical vibration"); }
   
-  // Electrical Analysis
   if (sensors.current > 14) { risk += 25; issues.push("Current spike detected"); }
   else if (sensors.current > 11) { risk += 10; issues.push("Irregular power draw"); }
 
-  // Compound penalty
   if (issues.length > 1) risk += 15;
 
   risk = Math.min(99, Math.max(0, Math.round(risk)));
@@ -126,7 +123,7 @@ const calculateAIAnalysis = (sensors: SensorData): { risk: number; health: numbe
 // --- COMPONENTS ---
 
 const Card = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <div className={cn("glass-panel rounded-xl p-5 transition-all duration-300 hover:border-slate-700", className)}>
+  <div className={cn("glass-panel rounded-xl p-5 transition-all duration-300 hover:border-[#44403c]", className)}>
     {children}
   </div>
 );
@@ -163,7 +160,6 @@ export default function BuildSenseAI() {
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Persist to localStorage
   useEffect(() => {
     const savedTasks = localStorage.getItem('bs_tasks');
     if (savedTasks) setTasks(JSON.parse(savedTasks));
@@ -173,13 +169,11 @@ export default function BuildSenseAI() {
     localStorage.setItem('bs_tasks', JSON.stringify(tasks));
   }, [tasks]);
 
-  // Live Sensor Simulation Tick
   useEffect(() => {
-    if (demoMode) return; // Pause random noise during demo
+    if (demoMode) return;
     
     const interval = setInterval(() => {
       setEquipment(prev => prev.map(eq => {
-        // Add tiny realistic noise to sensors
         const newSensors = {
           temperature: +(eq.sensors.temperature + (Math.random() * 0.4 - 0.2)).toFixed(1),
           vibration: +(eq.sensors.vibration + (Math.random() * 0.1 - 0.05)).toFixed(2),
@@ -189,7 +183,6 @@ export default function BuildSenseAI() {
         
         const analysis = calculateAIAnalysis(newSensors);
         
-        // Update history for charts (keep last 24 points)
         const newHistory = [...eq.history.slice(-23), {
           time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
           temp: newSensors.temperature,
@@ -204,7 +197,6 @@ export default function BuildSenseAI() {
     return () => clearInterval(interval);
   }, [demoMode]);
 
-  // Auto-generate alerts when status changes to critical/warning
   useEffect(() => {
     equipment.forEach(eq => {
       if ((eq.status === 'critical' || eq.status === 'warning') && 
@@ -222,14 +214,12 @@ export default function BuildSenseAI() {
     });
   }, [equipment]);
 
-  // Scroll chat to bottom
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatHistory]);
 
-  // --- HACKATHON DEMO MODE LOGIC ---
   useEffect(() => {
     if (!demoMode) return;
 
-    const targetId = 'EQ-001'; // HVAC-01
+    const targetId = 'EQ-001';
     const steps = [
       { delay: 1000, action: () => updateSensor(targetId, { temperature: 45, vibration: 2.1, current: 8.2 }) },
       { delay: 3000, action: () => updateSensor(targetId, { temperature: 52, vibration: 4.8, current: 9.5 }) },
@@ -246,7 +236,6 @@ export default function BuildSenseAI() {
         }
       },
       { delay: 15000, action: () => {
-          // Simulate completing the task
           setTasks(prev => prev.map(t => t.equipmentId === targetId && t.status !== 'Completed' ? { ...t, status: 'Completed' } : t));
           updateSensor(targetId, { temperature: 44, vibration: 1.9, current: 8.0 });
         }
@@ -323,37 +312,35 @@ export default function BuildSenseAI() {
     }, 800);
   };
 
-  // --- RENDER HELPERS ---
-
   if (view === 'login') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black p-4">
-        <div className="w-full max-w-md glass-panel p-8 rounded-2xl border-t border-slate-700/50">
+      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1c1c1c] via-[#0f0f0f] to-black p-4">
+        <div className="w-full max-w-md glass-panel p-8 rounded-2xl border-t border-[#44403c]/50">
           <div className="flex items-center gap-3 mb-8">
-            <div className="p-2 bg-indigo-500/20 rounded-lg"><Building2 className="w-8 h-8 text-indigo-400" /></div>
+            <div className="p-2 bg-[#f59e0b]/20 rounded-lg"><Building2 className="w-8 h-8 text-[#f59e0b]" /></div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">BuildSense AI</h1>
-              <p className="text-slate-400 text-sm">Predict Early. Act Smart.</p>
+              <h1 className="text-2xl font-bold tracking-tight text-[#fef3c7]">BuildSense AI</h1>
+              <p className="text-[#a8a29e] text-sm">Predict Early. Act Smart.</p>
             </div>
           </div>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Email</label>
-              <input type="email" defaultValue="admin@campus.edu" className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" />
+              <label className="block text-xs font-medium text-[#a8a29e] mb-1.5 uppercase tracking-wider">Email</label>
+              <input type="email" defaultValue="admin@campus.edu" className="w-full bg-[#0f0f0f]/50 border border-[#3a3a3a] rounded-lg px-4 py-3 text-sm text-[#fef3c7] focus:outline-none focus:border-[#f59e0b] transition-colors" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Password</label>
-              <input type="password" defaultValue="password" className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" />
+              <label className="block text-xs font-medium text-[#a8a29e] mb-1.5 uppercase tracking-wider">Password</label>
+              <input type="password" defaultValue="password" className="w-full bg-[#0f0f0f]/50 border border-[#3a3a3a] rounded-lg px-4 py-3 text-sm text-[#fef3c7] focus:outline-none focus:border-[#f59e0b] transition-colors" />
             </div>
             <button 
               onClick={() => setView('dashboard')}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-lg transition-all mt-4 shadow-[0_0_20px_-5px_rgba(79,70,229,0.5)]"
+              className="w-full bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] font-bold py-3 rounded-lg transition-all mt-4 shadow-[0_0_20px_-5px_rgba(245,158,11,0.5)]"
             >
               Enter Command Center
             </button>
           </div>
-          <p className="text-center text-xs text-slate-600 mt-6">Secure Institutional Access • v2.4.0</p>
+          <p className="text-center text-xs text-[#57534e] mt-6">Secure Institutional Access • v2.4.0</p>
         </div>
       </div>
     );
@@ -362,12 +349,11 @@ export default function BuildSenseAI() {
   const selectedEquipment = equipment.find(e => e.id === selectedEqId);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950">
-      {/* SIDEBAR */}
-      <aside className="w-64 border-r border-slate-800/60 flex flex-col bg-slate-950/80 backdrop-blur-xl z-20 hidden md:flex">
-        <div className="p-6 flex items-center gap-3 border-b border-slate-800/60">
-          <div className="p-1.5 bg-indigo-500/20 rounded-md"><Building2 className="w-6 h-6 text-indigo-400" /></div>
-          <span className="font-bold text-lg tracking-tight">BuildSense</span>
+    <div className="flex h-screen overflow-hidden bg-[#0f0f0f]">
+      <aside className="w-64 border-r border-[#3a3a3a]/60 flex flex-col bg-[#0f0f0f]/80 backdrop-blur-xl z-20 hidden md:flex">
+        <div className="p-6 flex items-center gap-3 border-b border-[#3a3a3a]/60">
+          <div className="p-1.5 bg-[#f59e0b]/20 rounded-md"><Building2 className="w-6 h-6 text-[#f59e0b]" /></div>
+          <span className="font-bold text-lg tracking-tight text-[#fef3c7]">BuildSense</span>
         </div>
         
         <nav className="flex-1 p-4 space-y-1">
@@ -386,8 +372,8 @@ export default function BuildSenseAI() {
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
                 view === item.id 
-                  ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" 
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                  ? "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/30" 
+                  : "text-[#a8a29e] hover:text-[#fef3c7] hover:bg-[#1c1c1c]"
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -396,23 +382,21 @@ export default function BuildSenseAI() {
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800/60">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-900/50 border border-slate-800">
+        <div className="p-4 border-t border-[#3a3a3a]/60">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[#1c1c1c]/50 border border-[#3a3a3a]">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-slate-200 truncate">System Online</p>
-              <p className="text-[10px] text-slate-500 truncate">48 Assets Connected</p>
+              <p className="text-xs font-medium text-[#fef3c7] truncate">System Online</p>
+              <p className="text-[10px] text-[#78716c] truncate">48 Assets Connected</p>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* TOP BAR */}
-        <header className="h-16 border-b border-slate-800/60 flex items-center justify-between px-6 bg-slate-950/80 backdrop-blur-md z-10">
+        <header className="h-16 border-b border-[#3a3a3a]/60 flex items-center justify-between px-6 bg-[#0f0f0f]/80 backdrop-blur-md z-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold capitalize">{view.replace('-', ' ')}</h2>
+            <h2 className="text-lg font-semibold capitalize text-[#fef3c7]">{view.replace('-', ' ')}</h2>
             {demoMode && (
               <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 animate-pulse flex items-center gap-2">
                 <Play className="w-3 h-3 fill-current" /> DEMO MODE ACTIVE (Step {demoStep}/8)
@@ -424,53 +408,51 @@ export default function BuildSenseAI() {
             {!demoMode ? (
               <button 
                 onClick={() => { setDemoMode(true); setDemoStep(0); setView('dashboard'); }}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all shadow-lg shadow-indigo-500/20"
+                className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] text-xs font-bold rounded-lg transition-all shadow-lg shadow-[#f59e0b]/30"
               >
                 <Play className="w-3 h-3 fill-current" /> START HACKATHON DEMO
               </button>
             ) : (
               <button 
                 onClick={() => setDemoMode(false)}
-                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-[#fef3c7] text-xs font-bold rounded-lg transition-all"
               >
                 <Square className="w-3 h-3 fill-current" /> STOP DEMO
               </button>
             )}
             
-            <div className="h-8 w-px bg-slate-800 mx-2" />
+            <div className="h-8 w-px bg-[#3a3a3a] mx-2" />
             
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium text-slate-200">Maintenance Admin</p>
-                <p className="text-[10px] text-slate-500">Campus Facilities</p>
+                <p className="text-xs font-medium text-[#fef3c7]">Maintenance Admin</p>
+                <p className="text-[10px] text-[#78716c]">Campus Facilities</p>
               </div>
-              <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+              <div className="w-9 h-9 rounded-full bg-[#2a2a2a] border border-[#44403c] flex items-center justify-center text-[#a8a29e]">
                 <User className="w-4 h-4" />
               </div>
             </div>
           </div>
         </header>
 
-        {/* SCROLLABLE VIEWPORT */}
         <div className="flex-1 overflow-auto p-6 scroll-smooth">
           
-          {/* DASHBOARD VIEW */}
           {view === 'dashboard' && (
             <div className="space-y-6 max-w-7xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[
                   { label: 'Building Health', value: '87%', sub: 'Healthy', color: 'text-emerald-400' },
-                  { label: 'Connected Assets', value: '48', sub: 'All Online', color: 'text-indigo-400' },
+                  { label: 'Connected Assets', value: '48', sub: 'All Online', color: 'text-[#f59e0b]' },
                   { label: 'Active Alerts', value: alerts.filter(a=>!a.acknowledged).length.toString(), sub: 'Requires Attention', color: 'text-amber-400' },
                   { label: 'High-Risk Assets', value: equipment.filter(e=>e.failureRisk > 50).length.toString(), sub: 'Predictive Flag', color: 'text-orange-400' },
                   { label: 'Predicted Failures', value: '5', sub: 'Next 30 Days', color: 'text-rose-400' },
-                  { label: 'Energy Usage', value: '18.6', sub: 'MWh Today', color: 'text-cyan-400' },
+                  { label: 'Energy Usage', value: '18.6', sub: 'MWh Today', color: 'text-[#fbbf24]' },
                 ].map((stat, i) => (
                   <Card key={i} className="flex flex-col justify-between min-h-[120px]">
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-xs font-medium text-[#78716c] uppercase tracking-wider">{stat.label}</p>
                     <div>
                       <p className={cn("text-3xl font-bold tracking-tight", stat.color)}>{stat.value}</p>
-                      <p className="text-xs text-slate-400 mt-1">{stat.sub}</p>
+                      <p className="text-xs text-[#a8a29e] mt-1">{stat.sub}</p>
                     </div>
                   </Card>
                 ))}
@@ -479,8 +461,8 @@ export default function BuildSenseAI() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2 min-h-[400px] flex flex-col">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-semibold text-slate-200">Campus Building Overview</h3>
-                    <button onClick={() => setView('monitor')} className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">View All <ChevronRight className="w-3 h-3"/></button>
+                    <h3 className="font-semibold text-[#fef3c7]">Campus Building Overview</h3>
+                    <button onClick={() => setView('monitor')} className="text-xs text-[#f59e0b] hover:text-[#fbbf24] flex items-center gap-1">View All <ChevronRight className="w-3 h-3"/></button>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 flex-1">
                     {['Academic Block', 'Laboratory Block', 'Library', 'Administration', 'Hostel', 'Sports Complex'].map((bldg, i) => {
@@ -494,19 +476,19 @@ export default function BuildSenseAI() {
                             "relative group p-4 rounded-xl border transition-all text-left h-full flex flex-col justify-between",
                             worstStatus === 'critical' ? "bg-rose-500/5 border-rose-500/30 hover:bg-rose-500/10" :
                             worstStatus === 'warning' ? "bg-amber-500/5 border-amber-500/30 hover:bg-amber-500/10" :
-                            "bg-slate-900/50 border-slate-800 hover:border-slate-600"
+                            "bg-[#1c1c1c]/50 border-[#3a3a3a] hover:border-[#44403c]"
                           )}
                         >
                           <div className="flex justify-between items-start">
                             <Building2 className={cn("w-6 h-6", 
                               worstStatus === 'critical' ? "text-rose-400" : 
-                              worstStatus === 'warning' ? "text-amber-400" : "text-slate-500"
+                              worstStatus === 'warning' ? "text-amber-400" : "text-[#78716c]"
                             )} />
                             <Badge status={worstStatus} />
                           </div>
                           <div>
-                            <p className="font-medium text-slate-200 text-sm">{bldg}</p>
-                            <p className="text-xs text-slate-500 mt-1">{bldgEq.length || Math.floor(Math.random()*5)+3} Assets Monitored</p>
+                            <p className="font-medium text-[#fef3c7] text-sm">{bldg}</p>
+                            <p className="text-xs text-[#78716c] mt-1">{bldgEq.length || Math.floor(Math.random()*5)+3} Assets Monitored</p>
                           </div>
                         </button>
                       );
@@ -515,10 +497,10 @@ export default function BuildSenseAI() {
                 </Card>
 
                 <Card className="min-h-[400px] flex flex-col">
-                  <h3 className="font-semibold text-slate-200 mb-4">Priority Maintenance Queue</h3>
+                  <h3 className="font-semibold text-[#fef3c7] mb-4">Priority Maintenance Queue</h3>
                   <div className="flex-1 space-y-3 overflow-auto pr-2">
                     {tasks.filter(t => t.status !== 'Completed').length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-slate-600 text-sm">
+                      <div className="h-full flex flex-col items-center justify-center text-[#57534e] text-sm">
                         <CheckCircle2 className="w-8 h-8 mb-2 opacity-50" />
                         No pending maintenance tasks
                       </div>
@@ -527,12 +509,12 @@ export default function BuildSenseAI() {
                         const pMap = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
                         return pMap[b.priority] - pMap[a.priority];
                       }).map(task => (
-                        <div key={task.id} className="p-3 rounded-lg bg-slate-950/50 border border-slate-800/60 hover:border-slate-700 transition-colors cursor-pointer" onClick={() => {setView('maintenance')}}>
+                        <div key={task.id} className="p-3 rounded-lg bg-[#0f0f0f]/50 border border-[#3a3a3a]/60 hover:border-[#44403c] transition-colors cursor-pointer" onClick={() => {setView('maintenance')}}>
                           <div className="flex justify-between items-start mb-1">
-                            <span className="text-sm font-medium text-slate-200">{task.title}</span>
+                            <span className="text-sm font-medium text-[#fef3c7]">{task.title}</span>
                             <Badge status={task.priority} />
                           </div>
-                          <p className="text-xs text-slate-500 line-clamp-1">{task.recommendation}</p>
+                          <p className="text-xs text-[#78716c] line-clamp-1">{task.recommendation}</p>
                         </div>
                       ))
                     )}
@@ -542,41 +524,40 @@ export default function BuildSenseAI() {
             </div>
           )}
 
-          {/* EQUIPMENT / MONITOR / PREDICTIONS DETAIL VIEW */}
           {(view === 'equipment' || view === 'monitor' || view === 'predictions') && (
             <div className="max-w-7xl mx-auto space-y-6">
               {!selectedEquipment ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {equipment.map(eq => (
-                    <Card key={eq.id} className="cursor-pointer hover:shadow-indigo-500/10 group" >
+                    <Card key={eq.id} className="cursor-pointer hover:shadow-[#f59e0b]/10 group" >
                       <div className="flex justify-between items-start mb-4" onClick={() => setSelectedEqId(eq.id)}>
-                        <div className="p-2 bg-slate-800 rounded-lg group-hover:bg-indigo-500/20 transition-colors">
-                          {eq.type === 'HVAC' ? <Fan className="w-5 h-5 text-slate-400 group-hover:text-indigo-400"/> : 
-                           eq.type === 'Generator' ? <Zap className="w-5 h-5 text-slate-400 group-hover:text-indigo-400"/> :
-                           <Cpu className="w-5 h-5 text-slate-400 group-hover:text-indigo-400"/>}
+                        <div className="p-2 bg-[#2a2a2a] rounded-lg group-hover:bg-[#f59e0b]/20 transition-colors">
+                          {eq.type === 'HVAC' ? <Fan className="w-5 h-5 text-[#a8a29e] group-hover:text-[#f59e0b]"/> : 
+                           eq.type === 'Generator' ? <Zap className="w-5 h-5 text-[#a8a29e] group-hover:text-[#f59e0b]"/> :
+                           <Cpu className="w-5 h-5 text-[#a8a29e] group-hover:text-[#f59e0b]"/>}
                         </div>
                         <Badge status={eq.status} />
                       </div>
                       <div onClick={() => setSelectedEqId(eq.id)}>
-                        <h4 className="font-semibold text-slate-200">{eq.name}</h4>
-                        <p className="text-xs text-slate-500 mb-4">{eq.building} • {eq.floor}</p>
+                        <h4 className="font-semibold text-[#fef3c7]">{eq.name}</h4>
+                        <p className="text-xs text-[#78716c] mb-4">{eq.building} • {eq.floor}</p>
                         
                         <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
                           <div>
-                            <p className="text-slate-500">Failure Risk</p>
+                            <p className="text-[#78716c]">Failure Risk</p>
                             <p className={cn("font-mono font-medium", eq.failureRisk > 70 ? "text-rose-400" : eq.failureRisk > 40 ? "text-amber-400" : "text-emerald-400")}>{eq.failureRisk}%</p>
                           </div>
                           <div>
-                            <p className="text-slate-500">Health Score</p>
-                            <p className="font-mono font-medium text-slate-300">{eq.healthScore}%</p>
+                            <p className="text-[#78716c]">Health Score</p>
+                            <p className="font-mono font-medium text-[#fde68a]">{eq.healthScore}%</p>
                           </div>
                           <div>
-                            <p className="text-slate-500">Temperature</p>
-                            <p className="font-mono font-medium text-slate-300">{eq.sensors.temperature}°C</p>
+                            <p className="text-[#78716c]">Temperature</p>
+                            <p className="font-mono font-medium text-[#fde68a]">{eq.sensors.temperature}°C</p>
                           </div>
                           <div>
-                            <p className="text-slate-500">Vibration</p>
-                            <p className="font-mono font-medium text-slate-300">{eq.sensors.vibration} mm/s</p>
+                            <p className="text-[#78716c]">Vibration</p>
+                            <p className="font-mono font-medium text-[#fde68a]">{eq.sensors.vibration} mm/s</p>
                           </div>
                         </div>
                       </div>
@@ -585,16 +566,15 @@ export default function BuildSenseAI() {
                 </div>
               ) : (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <button onClick={() => setSelectedEqId(null)} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 mb-2">← Back to List</button>
+                  <button onClick={() => setSelectedEqId(null)} className="text-sm text-[#a8a29e] hover:text-[#fef3c7] flex items-center gap-1 mb-2">← Back to List</button>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* LEFT COL: STATS & CONTROLS */}
                     <div className="space-y-6">
                       <Card>
                         <div className="flex justify-between items-center mb-6">
                           <div>
-                            <h2 className="text-2xl font-bold text-white">{selectedEquipment.name}</h2>
-                            <p className="text-sm text-slate-400">{selectedEquipment.building} • {selectedEquipment.floor}</p>
+                            <h2 className="text-2xl font-bold text-[#fef3c7]">{selectedEquipment.name}</h2>
+                            <p className="text-sm text-[#a8a29e]">{selectedEquipment.building} • {selectedEquipment.floor}</p>
                           </div>
                           <Badge status={selectedEquipment.status} />
                         </div>
@@ -602,10 +582,10 @@ export default function BuildSenseAI() {
                         <div className="space-y-4">
                           <div>
                             <div className="flex justify-between text-xs mb-1">
-                              <span className="text-slate-400">AI Failure Probability</span>
+                              <span className="text-[#a8a29e]">AI Failure Probability</span>
                               <span className={cn("font-bold", selectedEquipment.failureRisk > 70 ? "text-rose-400" : "text-emerald-400")}>{selectedEquipment.failureRisk}%</span>
                             </div>
-                            <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div className="h-2 bg-[#2a2a2a] rounded-full overflow-hidden">
                               <div 
                                 className={cn("h-full transition-all duration-1000 ease-out", 
                                   selectedEquipment.failureRisk > 70 ? "bg-rose-500" : 
@@ -614,32 +594,31 @@ export default function BuildSenseAI() {
                                 style={{ width: `${selectedEquipment.failureRisk}%` }}
                               />
                             </div>
-                            <p className="text-xs text-slate-500 mt-2 italic">"{selectedEquipment.issue}"</p>
+                            <p className="text-xs text-[#78716c] mt-2 italic">"{selectedEquipment.issue}"</p>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/60">
+                          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#3a3a3a]/60">
                             {[
                               { label: 'Temperature', val: `${selectedEquipment.sensors.temperature}°C`, icon: Thermometer },
                               { label: 'Vibration', val: `${selectedEquipment.sensors.vibration} mm/s`, icon: Activity },
                               { label: 'Current', val: `${selectedEquipment.sensors.current} A`, icon: Zap },
                               { label: 'Humidity', val: `${selectedEquipment.sensors.humidity}%`, icon: Wifi },
                             ].map((s, i) => (
-                              <div key={i} className="p-3 rounded-lg bg-slate-950/50 border border-slate-800/50">
-                                <div className="flex items-center gap-2 text-slate-500 mb-1">
+                              <div key={i} className="p-3 rounded-lg bg-[#0f0f0f]/50 border border-[#3a3a3a]/50">
+                                <div className="flex items-center gap-2 text-[#78716c] mb-1">
                                   <s.icon className="w-3 h-3" />
                                   <span className="text-[10px] uppercase tracking-wider">{s.label}</span>
                                 </div>
-                                <p className="text-lg font-mono font-medium text-slate-200">{s.val}</p>
+                                <p className="text-lg font-mono font-medium text-[#fef3c7]">{s.val}</p>
                               </div>
                             ))}
                           </div>
                         </div>
                       </Card>
 
-                      {/* SIMULATION CONTROLS - ONLY VISIBLE WHEN NOT IN DEMO */}
                       {!demoMode && (
-                        <Card className="border-indigo-500/20 bg-indigo-500/5">
-                          <h3 className="text-sm font-semibold text-indigo-300 mb-3 flex items-center gap-2">
+                        <Card className="border-[#f59e0b]/30 bg-[#f59e0b]/5">
+                          <h3 className="text-sm font-semibold text-[#fbbf24] mb-3 flex items-center gap-2">
                             <Settings className="w-4 h-4" /> Manual Sensor Simulation
                           </h3>
                           <div className="grid grid-cols-3 gap-2">
@@ -651,13 +630,12 @@ export default function BuildSenseAI() {
                       )}
                     </div>
 
-                    {/* MIDDLE COL: CHARTS */}
                     <Card className="lg:col-span-2 min-h-[400px] flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className="font-semibold text-slate-200">Real-time Telemetry & AI Trend</h3>
+                        <h3 className="font-semibold text-[#fef3c7]">Real-time Telemetry & AI Trend</h3>
                         <div className="flex gap-2">
                           {['24H', '7D', '30D'].map(t => (
-                            <button key={t} className="px-2 py-1 text-[10px] font-medium text-slate-500 hover:text-white hover:bg-slate-800 rounded transition-colors">{t}</button>
+                            <button key={t} className="px-2 py-1 text-[10px] font-medium text-[#78716c] hover:text-[#fef3c7] hover:bg-[#2a2a2a] rounded transition-colors">{t}</button>
                           ))}
                         </div>
                       </div>
@@ -666,50 +644,49 @@ export default function BuildSenseAI() {
                           <AreaChart data={selectedEquipment.history}>
                             <defs>
                               <linearGradient id="colorRisk" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                                <stop offset="5%" stopColor="#dc2626" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#dc2626" stopOpacity={0}/>
                               </linearGradient>
                               <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                               </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                            <XAxis dataKey="time" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
+                            <XAxis dataKey="time" stroke="#57534e" fontSize={10} tickLine={false} axisLine={false} />
+                            <YAxis stroke="#57534e" fontSize={10} tickLine={false} axisLine={false} />
                             <RechartsTooltip 
-                              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', borderRadius: '8px', fontSize: '12px' }}
-                              itemStyle={{ color: '#e2e8f0' }}
+                              contentStyle={{ backgroundColor: '#1c1c1c', borderColor: '#3a3a3a', borderRadius: '8px', fontSize: '12px', color: '#fef3c7' }}
+                              itemStyle={{ color: '#fde68a' }}
                             />
-                            <Area type="monotone" dataKey="risk" stroke="#f43f5e" strokeWidth={2} fillOpacity={1} fill="url(#colorRisk)" name="Failure Risk %" />
-                            <Area type="monotone" dataKey="temp" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorTemp)" name="Temperature °C" />
+                            <Area type="monotone" dataKey="risk" stroke="#dc2626" strokeWidth={2} fillOpacity={1} fill="url(#colorRisk)" name="Failure Risk %" />
+                            <Area type="monotone" dataKey="temp" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorTemp)" name="Temperature °C" />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
                     </Card>
                   </div>
 
-                  {/* PRESCRIPTIVE ACTION PANEL */}
                   {selectedEquipment.failureRisk > 30 && (
-                    <div className="glass-panel rounded-xl p-6 border-l-4 border-l-indigo-500 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="glass-panel rounded-xl p-6 border-l-4 border-l-[#f59e0b] animate-in fade-in slide-in-from-bottom-2">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <Lightbulb className="w-4 h-4 text-indigo-400" />
-                            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">AI Prescriptive Recommendation</span>
+                            <Lightbulb className="w-4 h-4 text-[#f59e0b]" />
+                            <span className="text-xs font-bold text-[#f59e0b] uppercase tracking-wider">AI Prescriptive Recommendation</span>
                           </div>
-                          <h3 className="text-lg font-semibold text-white mb-1">{selectedEquipment.action}</h3>
-                          <p className="text-sm text-slate-400">Reason: {selectedEquipment.issue} deviates from baseline operating pattern.</p>
+                          <h3 className="text-lg font-semibold text-[#fef3c7] mb-1">{selectedEquipment.action}</h3>
+                          <p className="text-sm text-[#a8a29e]">Reason: {selectedEquipment.issue} deviates from baseline operating pattern.</p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           <button 
                             onClick={() => createTaskFromPrediction(selectedEquipment.id)}
                             disabled={tasks.some(t => t.equipmentId === selectedEquipment.id && t.status !== 'Completed')}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-all shadow-lg shadow-indigo-500/20"
+                            className="px-4 py-2 bg-[#f59e0b] hover:bg-[#fb923c] disabled:bg-[#2a2a2a] disabled:text-[#78716c] text-[#0f0f0f] text-sm font-bold rounded-lg transition-all shadow-lg shadow-[#f59e0b]/30"
                           >
                             {tasks.some(t => t.equipmentId === selectedEquipment.id && t.status !== 'Completed') ? 'Task Created' : 'Create Maintenance Task'}
                           </button>
-                          <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-all">Acknowledge</button>
+                          <button className="px-4 py-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] text-[#fde68a] text-sm font-medium rounded-lg transition-all">Acknowledge</button>
                         </div>
                       </div>
                     </div>
@@ -719,14 +696,13 @@ export default function BuildSenseAI() {
             </div>
           )}
 
-          {/* MAINTENANCE KANBAN */}
           {view === 'maintenance' && (
             <div className="h-full flex flex-col max-w-7xl mx-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Maintenance Priority Board</h2>
+                <h2 className="text-xl font-bold text-[#fef3c7]">Maintenance Priority Board</h2>
                 <div className="flex gap-2">
                   {['All', 'Critical', 'High', 'Medium'].map(f => (
-                    <button key={f} className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all">{f}</button>
+                    <button key={f} className="px-3 py-1.5 text-xs font-medium text-[#a8a29e] hover:text-[#fef3c7] bg-[#1c1c1c] hover:bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg transition-all">{f}</button>
                   ))}
                 </div>
               </div>
@@ -735,25 +711,25 @@ export default function BuildSenseAI() {
                 {(['Critical', 'In Progress', 'Scheduled', 'Completed'] as const).map(status => (
                   <div key={status} className="flex flex-col min-w-[280px]">
                     <div className="flex items-center justify-between mb-3 px-1">
-                      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{status}</h3>
-                      <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded-full text-slate-600 border border-slate-800">
+                      <h3 className="text-xs font-bold text-[#78716c] uppercase tracking-wider">{status}</h3>
+                      <span className="text-[10px] bg-[#1c1c1c] px-2 py-0.5 rounded-full text-[#57534e] border border-[#3a3a3a]">
                         {tasks.filter(t => t.status === status).length}
                       </span>
                     </div>
-                    <div className="flex-1 bg-slate-900/30 rounded-xl p-2 space-y-2 border border-slate-800/30">
+                    <div className="flex-1 bg-[#1c1c1c]/30 rounded-xl p-2 space-y-2 border border-[#3a3a3a]/30">
                       {tasks.filter(t => t.status === status).map(task => (
-                        <div key={task.id} className="p-3 bg-slate-950 border border-slate-800 rounded-lg shadow-sm hover:border-slate-700 transition-all group">
+                        <div key={task.id} className="p-3 bg-[#0f0f0f] border border-[#3a3a3a] rounded-lg shadow-sm hover:border-[#44403c] transition-all group">
                           <div className="flex justify-between items-start mb-2">
                             <Badge status={task.priority} />
-                            <span className="text-[10px] text-slate-600">{new Date(task.createdAt).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-[#57534e]">{new Date(task.createdAt).toLocaleDateString()}</span>
                           </div>
-                          <h4 className="text-sm font-medium text-slate-200 mb-1">{task.title}</h4>
-                          <p className="text-xs text-slate-500 mb-3 line-clamp-2">{task.recommendation}</p>
+                          <h4 className="text-sm font-medium text-[#fef3c7] mb-1">{task.title}</h4>
+                          <p className="text-xs text-[#78716c] mb-3 line-clamp-2">{task.recommendation}</p>
                           
                           {status !== 'Completed' && (
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               {status === 'Critical' && (
-                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'In Progress'} : t))} className="flex-1 py-1 text-[10px] bg-indigo-500/10 text-indigo-400 rounded hover:bg-indigo-500/20">Start</button>
+                                <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'In Progress'} : t))} className="flex-1 py-1 text-[10px] bg-[#f59e0b]/10 text-[#f59e0b] rounded hover:bg-[#f59e0b]/20">Start</button>
                               )}
                               {status === 'In Progress' && (
                                 <button onClick={() => setTasks(prev => prev.map(t => t.id === task.id ? {...t, status: 'Scheduled'} : t))} className="flex-1 py-1 text-[10px] bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20">Schedule</button>
@@ -766,7 +742,7 @@ export default function BuildSenseAI() {
                         </div>
                       ))}
                       {tasks.filter(t => t.status === status).length === 0 && (
-                        <div className="h-24 flex items-center justify-center text-xs text-slate-700 border-2 border-dashed border-slate-800/50 rounded-lg">
+                        <div className="h-24 flex items-center justify-center text-xs text-[#57534e] border-2 border-dashed border-[#3a3a3a]/50 rounded-lg">
                           No tasks
                         </div>
                       )}
@@ -777,25 +753,24 @@ export default function BuildSenseAI() {
             </div>
           )}
 
-          {/* AI COPILOT */}
           {view === 'copilot' && (
             <div className="max-w-4xl mx-auto h-[calc(100vh-140px)] flex flex-col glass-panel rounded-2xl overflow-hidden">
-              <div className="p-4 border-b border-slate-800/60 bg-slate-900/80 flex items-center gap-3">
-                <div className="p-2 bg-indigo-500/20 rounded-lg"><Bot className="w-5 h-5 text-indigo-400" /></div>
+              <div className="p-4 border-b border-[#3a3a3a]/60 bg-[#1c1c1c]/80 flex items-center gap-3">
+                <div className="p-2 bg-[#f59e0b]/20 rounded-lg"><Bot className="w-5 h-5 text-[#f59e0b]" /></div>
                 <div>
-                  <h3 className="font-semibold text-white">BuildSense AI Copilot</h3>
-                  <p className="text-xs text-slate-500">Your 24/7 virtual maintenance assistant</p>
+                  <h3 className="font-semibold text-[#fef3c7]">BuildSense AI Copilot</h3>
+                  <p className="text-xs text-[#78716c]">Your 24/7 virtual maintenance assistant</p>
                 </div>
               </div>
               
-              <div className="flex-1 overflow-auto p-4 space-y-4 bg-slate-950/50">
+              <div className="flex-1 overflow-auto p-4 space-y-4 bg-[#0f0f0f]/50">
                 {chatHistory.map((msg, i) => (
                   <div key={i} className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                     <div className={cn(
                       "max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed",
                       msg.role === 'user' 
-                        ? "bg-indigo-600 text-white rounded-br-none" 
-                        : "bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700"
+                        ? "bg-[#f59e0b] text-[#0f0f0f] font-medium rounded-br-none" 
+                        : "bg-[#2a2a2a] text-[#fde68a] rounded-bl-none border border-[#44403c]"
                     )}>
                       {msg.content}
                     </div>
@@ -804,13 +779,13 @@ export default function BuildSenseAI() {
                 <div ref={chatEndRef} />
               </div>
               
-              <div className="p-4 border-t border-slate-800/60 bg-slate-900/80 space-y-3">
+              <div className="p-4 border-t border-[#3a3a3a]/60 bg-[#1c1c1c]/80 space-y-3">
                 <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                   {['Which equipment should I inspect first?', 'Why is HVAC-01 at high risk?', 'Show critical equipment', 'Which equipment has increasing vibration?'].map(q => (
                     <button 
                       key={q} 
                       onClick={() => handleCopilotSend(q)}
-                      className="whitespace-nowrap px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-xs text-slate-300 transition-colors"
+                      className="whitespace-nowrap px-3 py-1.5 bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-[#44403c] rounded-full text-xs text-[#fde68a] transition-colors"
                     >
                       {q}
                     </button>
@@ -818,8 +793,8 @@ export default function BuildSenseAI() {
                 </div>
                 <form onSubmit={(e) => { e.preventDefault(); const input = e.currentTarget.input as HTMLInputElement; if(input.value.trim()) { handleCopilotSend(input.value); input.value = ''; } }}>
                   <div className="relative">
-                    <input name="input" type="text" placeholder="Ask about equipment health, risks, or maintenance..." className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-indigo-500 transition-colors" />
-                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-white transition-colors">
+                    <input name="input" type="text" placeholder="Ask about equipment health, risks, or maintenance..." className="w-full bg-[#0f0f0f] border border-[#3a3a3a] rounded-xl pl-4 pr-12 py-3 text-sm text-[#fef3c7] focus:outline-none focus:border-[#f59e0b] transition-colors" />
+                    <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-[#f59e0b] hover:bg-[#fb923c] rounded-lg text-[#0f0f0f] transition-colors">
                       <MessageSquare className="w-4 h-4" />
                     </button>
                   </div>
@@ -828,31 +803,30 @@ export default function BuildSenseAI() {
             </div>
           )}
 
-          {/* ANALYTICS PLACEHOLDER */}
           {view === 'analytics' && (
             <div className="max-w-7xl mx-auto space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="min-h-[300px]">
-                  <h3 className="font-semibold text-slate-200 mb-4">Campus Energy Consumption (MWh)</h3>
+                  <h3 className="font-semibold text-[#fef3c7] mb-4">Campus Energy Consumption (MWh)</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={[{d:'Mon',v:18},{d:'Tue',v:22},{d:'Wed',v:19},{d:'Thu',v:24},{d:'Fri',v:21},{d:'Sat',v:15},{d:'Sun',v:14}]}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                      <XAxis dataKey="d" stroke="#475569" fontSize={10} />
-                      <YAxis stroke="#475569" fontSize={10} />
-                      <RechartsTooltip contentStyle={{backgroundColor:'#0f172a',borderColor:'#1e293b',borderRadius:'8px'}} />
-                      <Line type="monotone" dataKey="v" stroke="#06b6d4" strokeWidth={2} dot={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
+                      <XAxis dataKey="d" stroke="#57534e" fontSize={10} />
+                      <YAxis stroke="#57534e" fontSize={10} />
+                      <RechartsTooltip contentStyle={{backgroundColor:'#1c1c1c',borderColor:'#3a3a3a',borderRadius:'8px',color:'#fef3c7'}} />
+                      <Line type="monotone" dataKey="v" stroke="#fb923c" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </Card>
                 <Card className="min-h-[300px]">
-                  <h3 className="font-semibold text-slate-200 mb-4">Aggregate Failure Risk Distribution</h3>
+                  <h3 className="font-semibold text-[#fef3c7] mb-4">Aggregate Failure Risk Distribution</h3>
                   <ResponsiveContainer width="100%" height={250}>
                     <AreaChart data={equipment.map(e => ({name: e.name, risk: e.failureRisk}))}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                      <XAxis dataKey="name" stroke="#475569" fontSize={10} />
-                      <YAxis stroke="#475569" fontSize={10} />
-                      <RechartsTooltip contentStyle={{backgroundColor:'#0f172a',borderColor:'#1e293b',borderRadius:'8px'}} />
-                      <Area type="step" dataKey="risk" stroke="#f43f5e" fill="#f43f5e" fillOpacity={0.2} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" vertical={false} />
+                      <XAxis dataKey="name" stroke="#57534e" fontSize={10} />
+                      <YAxis stroke="#57534e" fontSize={10} />
+                      <RechartsTooltip contentStyle={{backgroundColor:'#1c1c1c',borderColor:'#3a3a3a',borderRadius:'8px',color:'#fef3c7'}} />
+                      <Area type="step" dataKey="risk" stroke="#dc2626" fill="#dc2626" fillOpacity={0.2} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </Card>

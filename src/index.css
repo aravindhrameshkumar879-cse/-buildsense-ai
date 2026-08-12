@@ -3,13 +3,19 @@
 :root { color-scheme: dark; }
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
+  background-color: #0f0f0f;
+  color: #fef3c7;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
 
 .glass-panel {
-  @apply bg-slate-900/60 backdrop-blur-md border border-slate-800/60 shadow-xl;
+  background-color: rgba(28, 28, 28, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(68, 64, 60, 0.6);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
