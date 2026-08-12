@@ -40,10 +40,9 @@ interface Equipment {
   status: Status;
   lastMaintenance: string;
   history: Array<{ time: string; temp: number; vib: number; risk: number }>;
-  issue: string;
-  action: string;
+  issue?: string;
+  action?: string;
 }
-
 interface MaintenanceTask {
   id: string;
   equipmentId: string;
