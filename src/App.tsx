@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Activity, AlertTriangle, BarChart3, Bot, Building2, CheckCircle2, 
-  ChevronRight, Clock, Cpu, Fan, Gauge, LayoutDashboard, Lightbulb, 
-  ListFilter, MessageSquare, Play, RefreshCcw, Search, Settings, 
-  ShieldAlert, Thermometer, TrendingUp, User, Wifi, Zap, Square
+  Activity, BarChart3, Bot, Building2, CheckCircle2, 
+  ChevronRight, Cpu, Fan, LayoutDashboard, Lightbulb, 
+  MessageSquare, Play, Settings, 
+  Thermometer, TrendingUp, User, Wifi, Zap, Square
 } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
@@ -40,6 +40,8 @@ interface Equipment {
   status: Status;
   lastMaintenance: string;
   history: Array<{ time: string; temp: number; vib: number; risk: number }>;
+  issue: string;
+  action: string;
 }
 
 interface MaintenanceTask {
