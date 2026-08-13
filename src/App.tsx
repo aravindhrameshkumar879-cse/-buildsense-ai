@@ -341,7 +341,7 @@ export default function BuildSenseAI() {
             </div>
             <button 
               onClick={() => setView('dashboard')}
-              className="w-full bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] font-bold py-3 rounded-lg transition-all mt-4 shadow-[0_0_20px_-5px_rgba(245,158,11,0.5)] animate-glow-pulse btn-press animate-fade-in-up stagger-3"
+              className="w-full bg-[#f59e0b] hover:bg-[#fb923c] text-[#0f0f0f] font-bold py-3 rounded-lg transition-all mt-4 shadow-[0_0_20px_-5px_rgba(245,158,11,0.5)] animate-glow-pulse btn-press"
             >
               Enter Command Center
             </button>
